@@ -1,0 +1,35 @@
+Disass main level0
+
+(gdb) disass main
+Dump of assembler code for function main:
+   0x08048ec0 <+0>:	push   %ebp
+   0x08048ec1 <+1>:	mov    %esp,%ebp
+   0x08048ec3 <+3>:	and    $0xfffffff0,%esp
+   0x08048ec6 <+6>:	sub    $0x20,%esp
+   0x08048ec9 <+9>:	mov    0xc(%ebp),%eax
+   0x08048ecc <+12>:	add    $0x4,%eax
+   0x08048ecf <+15>:	mov    (%eax),%eax
+   0x08048ed1 <+17>:	mov    %eax,(%esp)
+   0x08048ed4 <+20>:	call   0x8049710 <atoi>
+   0x08048ed9 <+25>:	cmp    $0x1a7,%eax
+   0x08048ede <+30>:	jne    0x8048f58 <main+152>
+   0x08048ee0 <+32>:	movl   $0x80c5348,(%esp)
+   0x08048ee7 <+39>:	call   0x8050bf0 <strdup>
+
+
+On remarque que apres le call a atoi nous avons une comparaison puis un jump dans le main
+Nous pouvons en conclure qu'il y a une condition qui compare le retour de atoi avec 0x1a7
+0x1a7 = 423
+On va donc essayer de lancer level0 avec comme argument 423
+
+level0@RainFall:~$ ./level0 423
+$ id
+uid=2030(level1) gid=2020(level0) groups=2030(level1),100(users),2020(level0)
+
+Nous avons un shell et level1 comme user.
+Il nous reste plus qu'a recuperer le flag
+
+$ cat /home/user/level1/.pass
+1fe8a524fa4bec01ca4ea2a869af2a02260d4a7d5fe7e7c24d8617e6dca12d3a
+
+
