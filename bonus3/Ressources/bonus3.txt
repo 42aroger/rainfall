@@ -1,0 +1,15 @@
+L'executable lit un fichier puis stock la data
+
+truncate la data en utilisant atoi(argv[1])
+compare la taa en utilisant strcmp(data, argv[1])
+
+Pour sauter la comparaison il nous suffit de donner une ligne vide en argument
+
+./bonus3 ""
+
+cd ../end && cat .pass
+
+bonus3@RainFall:~$ ./bonus3 ""
+$ cd ../end && cat .pass
+3321b6f81659f9a71c76616f606e4b50189cecfea611393d5d649f75e157353c
+
